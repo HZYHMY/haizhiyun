@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haizhiyun.dao.UserMapper">
+	<resultMap type="com.haizhiyun.entity.bean.User" id="UserResultMap">
+		<result column="uuid" jdbcType="VARCHAR" property="uuid" />
+		<result column="user_name" jdbcType="VARCHAR"
+			property="userName" />
+		<result column="password" jdbcType="VARCHAR"
+			property="password" />
+			<result column="salt" jdbcType="VARCHAR"
+			property="salt" />
+	</resultMap>
+	<!-- 添加 -->
+	<insert id="addUser" parameterType="com.haizhiyun.entity.bean.User">
+	insert into user (
+	uuid,user_name,password,salt,create_time,update_time)
+	values(#{uuid,jdbcType = VARCHAR},
+	      #{userName,jdbcType = VARCHAR},
+	      #{password,jdbcType = VARCHAR},
+	      #{salt,jdbcType = VARCHAR},
+	      sysdate(),
+	      sysdate()
+	      )
+	</insert>
+	<update id="updatePassword" parameterType="com.haizhiyun.entity.bean.User">
+	update user 
+	set password =  #{password,jdbcType = VARCHAR} 
+	where 
+	uuid = #{uuid,jdbcType = VARCHAR}
+	</update>
+	<select id="getUser" parameterType="com.haizhiyun.entity.bean.User" resultMap="UserResultMap" >
+	select 
+	uuid,
+	user_name ,
+	password,
+	salt
+	from user
+	<where>
+	<if test = "uuid != null and uuid != ''">
+	uuid = #{uuid}
+	</if>
+	<if test="userName != null and userName != ''">
+	and user_name = #{userName}
+	</if>
+	<if test="password != null and password != ''">
+	and password = #{password }
+	</if>
+	</where>
+	</select>
+	<select id="getUserByName" parameterType="java.lang.String"   resultMap="UserResultMap">
+	select
+	uuid,
+	user_name ,
+	password,
+	salt
+	from user where user_name = #{userName,jdbcType = VARCHAR}
+	</select>
+	<delete id="deleteUser" parameterType="java.lang.String">
+	delete from user 
+	where 
+	uuid = #{uuid,jdbcType = VARCHAR}
+	</delete>
+   
+</mapper>
