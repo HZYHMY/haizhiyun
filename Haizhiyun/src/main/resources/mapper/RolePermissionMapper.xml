@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haizhiyun.dao.RolePermissionMapper">
+	<resultMap type="com.haizhiyun.entity.bean.RolePermission" id="RolePermissionResultMap">
+		<id property="id" jdbcType="BIGINT" column="id" />
+		<result column="uuid" jdbcType="VARCHAR" property="uuid" />
+		<result column="role_id" jdbcType="BIGINT" property="roleId" />
+		<result column="permission_id" jdbcType="BIGINT" property="permissionId" />
+	</resultMap>
+	<!-- 批量插入 -->
+	<insert id="createRolePermission" parameterType="java.util.List" >
+		 insert into role_permission (
+         uuid,
+         role_id,
+         permission_id
+          )
+    values 
+    <foreach collection="list" item="item" index="index" separator=",">
+         (
+         #{item.uuid,jdbcType=VARCHAR},
+         #{item.roleId,jdbcType=BIGINT},
+         #{item.permissionId,jdbcType=BIGINT}
+         )
+    </foreach>
+	</insert>
+	<!-- 删除 -->
+	<delete id="deleteRolePermission" parameterType="java.lang.Long">
+		delete from role_permission where role_id = #{roleId,jdbcType= BIGINT }
+	</delete>
+
+</mapper>

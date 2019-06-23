@@ -1,64 +1,105 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.haizhiyun.dao.UserMapper">
-	<resultMap type="com.haizhiyun.entity.bean.User" id="UserResultMap">
+	<resultMap type="com.haizhiyun.entity.bean.User"
+		id="UserResultMap">
+		<id column="id" jdbcType="BIGINT" property="id"/>
 		<result column="uuid" jdbcType="VARCHAR" property="uuid" />
 		<result column="user_name" jdbcType="VARCHAR"
 			property="userName" />
 		<result column="password" jdbcType="VARCHAR"
 			property="password" />
-			<result column="salt" jdbcType="VARCHAR"
-			property="salt" />
+		<result column="salt" jdbcType="VARCHAR" property="salt" />
+	</resultMap>
+	<resultMap type="com.haizhiyun.entity.bean.Role"
+		id="RoleResultMap">
+		<id column="id" jdbcType="BIGINT" property="id" />
+		<result column="uuid" jdbcType="VARCHAR" property="uuid" />
+		<result column="role_name" jdbcType="VARCHAR"
+			property="roleName" />
 	</resultMap>
 	<!-- 添加 -->
-	<insert id="addUser" parameterType="com.haizhiyun.entity.bean.User">
-	insert into user (
-	uuid,user_name,password,salt,create_time,update_time)
-	values(#{uuid,jdbcType = VARCHAR},
-	      #{userName,jdbcType = VARCHAR},
-	      #{password,jdbcType = VARCHAR},
-	      #{salt,jdbcType = VARCHAR},
-	      sysdate(),
-	      sysdate()
-	      )
+	<insert id="addUser"
+		parameterType="com.haizhiyun.entity.bean.User">
+		insert into user (
+		uuid,user_name,password,salt,create_time,update_time)
+		values(#{uuid,jdbcType = VARCHAR},
+		#{userName,jdbcType = VARCHAR},
+		#{password,jdbcType = VARCHAR},
+		#{salt,jdbcType = VARCHAR},
+		sysdate(),
+		sysdate()
+		)
 	</insert>
-	<update id="updatePassword" parameterType="com.haizhiyun.entity.bean.User">
-	update user 
-	set password =  #{password,jdbcType = VARCHAR} 
-	where 
-	uuid = #{uuid,jdbcType = VARCHAR}
+	<update id="updatePassword"
+		parameterType="com.haizhiyun.entity.bean.User">
+		update user
+		set password = #{password,jdbcType = VARCHAR}
+		where
+		uuid = #{uuid,jdbcType = VARCHAR}
 	</update>
-	<select id="getUser" parameterType="com.haizhiyun.entity.bean.User" resultMap="UserResultMap" >
-	select 
-	uuid,
-	user_name ,
-	password,
-	salt
-	from user
-	<where>
-	<if test = "uuid != null and uuid != ''">
-	uuid = #{uuid}
-	</if>
-	<if test="userName != null and userName != ''">
-	and user_name = #{userName}
-	</if>
-	<if test="password != null and password != ''">
-	and password = #{password }
-	</if>
-	</where>
+	<select id="getUser"
+		parameterType="com.haizhiyun.entity.bean.User"
+		resultMap="UserResultMap">
+		select
+		id,
+		uuid,
+		user_name ,
+		password,
+		salt
+		from user
+		<where>
+			<if test="uuid != null and uuid != ''">
+				uuid = #{uuid,jdbcType = VARCHAR}
+			</if>
+			<if test="userName != null and userName != ''">
+				and user_name = #{userName,jdbcType = VARCHAR}
+			</if>
+			<if test="password != null and password != ''">
+				and password = #{password ,jdbcType = VARCHAR}
+			</if>
+		</where>
 	</select>
-	<select id="getUserByName" parameterType="java.lang.String"   resultMap="UserResultMap">
-	select
-	uuid,
-	user_name ,
-	password,
-	salt
-	from user where user_name = #{userName,jdbcType = VARCHAR}
+	<select id="getUserByName" parameterType="java.lang.String"
+		resultMap="UserResultMap">
+		select
+		id,
+		uuid,
+		user_name ,
+		password,
+		salt
+		from user where user_name
+		= #{userName,jdbcType = VARCHAR}
 	</select>
-	<delete id="deleteUser" parameterType="java.lang.String">
-	delete from user 
-	where 
-	uuid = #{uuid,jdbcType = VARCHAR}
+	<delete id="deleteUser" parameterType="java.lang.Long">
+		delete from user
+		where
+		id = #{userId,jdbcType = BIGINT}
 	</delete>
-   
+	<!-- 查询用户已有权限 -->
+	<select id="selectUserPermissionList"
+		parameterType="java.lang.Long" resultType="java.lang.String">
+		select
+		p.url
+		from
+		user u,user_role ur,role r,role_permission rp,permissions p
+		where
+		u.id =
+		#{userId,jdbcType = BIGINT} and ur.user_id = u.id and ur.role_id =
+		r.id and rp.role_id = r.id and
+		rp.permission_id = p.id
+	</select>
+	<!-- 查询用户已有角色 -->
+	<select id="getUserRole" parameterType="java.lang.Long"
+		resultMap="RoleResultMap">
+		select
+		r.id,
+		r.uuid,
+		r.role_name
+		from
+		user u,user_role ur,role r
+		where
+		u.id = #{userId,jdbcType = BIGINT} and ur.user_id = u.id and ur.role_id =
+		r.id
+	</select>
 </mapper>

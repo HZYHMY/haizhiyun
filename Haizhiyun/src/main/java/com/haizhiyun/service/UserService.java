@@ -1,5 +1,9 @@
 package com.haizhiyun.service;
 
+import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
+
 import com.haizhiyun.entity.bean.User;
 
 public interface UserService {
@@ -26,5 +30,11 @@ public interface UserService {
 	 * @param uuid
 	 * @return
 	 */
-	public int deleteUser(String uuid);
+	public int deleteUser(@Param("userId") Long userId);
+	/**
+	 * 查询用户已有权限
+	 * @param userId
+	 * @return list
+	 */
+	public List<String> selectUserPermissionList(@Param("userId") Long userId);
 }

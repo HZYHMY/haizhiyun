@@ -88,7 +88,7 @@ public class JWTUtil {
 				.setAudience(user.getUuid());
 		//设置有效时间
 		if (currentTimeMillis >= 0) {
-			long expMillis=currentTimeMillis + 60*1000*10;
+			long expMillis=currentTimeMillis + 60*1000*15;
 			Date newDate = new Date(expMillis);
 			builder.setExpiration(newDate);
 		}

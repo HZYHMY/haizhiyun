@@ -4,4 +4,6 @@ package com.haizhiyun.util;
  */
 public class ConstantUtil {
 
+	public static String ZREO="0";
+
 }

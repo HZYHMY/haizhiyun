@@ -3,8 +3,6 @@ package com.haizhiyun.entity.bean;
 import java.io.Serializable;
 import java.sql.Timestamp;
 
-import com.haizhiyun.entity.HaiZhiYunBase;
-
 public class User implements Serializable {
 
 	/**
@@ -17,11 +15,17 @@ public class User implements Serializable {
 	private String password;
 	// 盐
 	private String salt;
+	private Role role;
 	private Timestamp createTime;
 	private Timestamp updateTime;
 
 	public User() {
 		super();
+	}
+
+	public User(String userName) {
+		super();
+		this.userName = userName;
 	}
 
 	public User(Long id, String uuid, String userName, String password, String salt, Timestamp createTime,
@@ -96,6 +100,14 @@ public class User implements Serializable {
 
 	public void setUuid(String uuid) {
 		this.uuid = uuid;
+	}
+
+	public Role getRole() {
+		return role;
+	}
+
+	public void setRole(Role role) {
+		this.role = role;
 	}
 
 }

@@ -26,7 +26,7 @@ public class SpringContextHanddle implements ApplicationContextAware {
 	}
 
 	/*
-	 * 获取静态变量中的context
+	 * 获取context
 	 */
 	public static ApplicationContext getApplicationContext() {
 		return context;
@@ -42,7 +42,7 @@ public class SpringContextHanddle implements ApplicationContextAware {
 	}
 
 	/*
-	 * 从静态变量applicationContext中得到Bean, 自动转型为所赋值对象的类型.
+	 * 从静态变量applicationContext中得到Bean, 自动转型为所赋值对象的类型
 	 */
 	public static <T> T getBean(Class<T> requiredType) {
 

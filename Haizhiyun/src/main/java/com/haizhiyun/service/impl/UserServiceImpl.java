@@ -1,5 +1,8 @@
 package com.haizhiyun.service.impl;
 
+import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -33,9 +36,15 @@ public class UserServiceImpl implements UserService{
 	}
 
 	@Override
-	public int deleteUser(String uuid) {
-		int i = userMapper.deleteUser(uuid);
+	public int deleteUser( Long userId) {
+		int i = userMapper.deleteUser(userId);
 		return i;
+	}
+
+	@Override
+	public List<String> selectUserPermissionList(Long userId) {
+		List<String> userPermissionList = userMapper.selectUserPermissionList(userId);
+		return userPermissionList;
 	}
 
 }

@@ -1,6 +1,7 @@
 package com.haizhiyun.handle;
 
 import java.lang.reflect.Method;
+import java.util.List;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -19,7 +20,6 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.haizhiyun.annotation.PassToken;
 import com.haizhiyun.annotation.UserLoginToken;
-import com.haizhiyun.controller.UserController;
 import com.haizhiyun.entity.bean.User;
 import com.haizhiyun.exception.ErrorCode;
 import com.haizhiyun.exception.MyException;
@@ -31,12 +31,12 @@ import com.haizhiyun.util.RedisUtil;
  *拦截器
  */
 public class AuthenticationInterceptor implements HandlerInterceptor{
-	
-	
+
+
 	private static Logger logger = LoggerFactory.getLogger(AuthenticationInterceptor.class);
-   /**
-    * 预处理
-    */
+	/**
+	 * 预处理
+	 */
 	@Autowired
 	private UserService userService;
 	@Autowired
@@ -46,14 +46,14 @@ public class AuthenticationInterceptor implements HandlerInterceptor{
 			throws Exception {
 		logger.debug("------------------------进入拦截器----------------------------------");
 		//获取token
-//		String token = request.getHeader("Authorization");
+		//		String token = request.getHeader("Authorization");
 		String uuid = (String) request.getSession().getAttribute("uuid");
-	    logger.debug("-------------------拦截器==========================uuid:"+uuid);
-	    String token = "";
-	    if (!ObjectUtils.isEmpty(uuid)) {
-	    	 token = (String) redisUtil.get(uuid);
-	    }
-	    logger.debug("-------------------拦截器==========================token:"+token);
+		logger.debug("-------------------拦截器==========================uuid:"+uuid);
+		String token = "";
+		if (!ObjectUtils.isEmpty(uuid)) {
+			token = (String) redisUtil.get(uuid);
+		}
+		logger.debug("-------------------拦截器==========================token:"+token);
 		//如果不是映射的方法直接通过
 		if (!(handler instanceof HandlerMethod) ) {
 			return true;
@@ -65,55 +65,60 @@ public class AuthenticationInterceptor implements HandlerInterceptor{
 		if (method.isAnnotationPresent(PassToken.class)) {
 			//获取注释
 			PassToken passToken = method.getAnnotation(PassToken.class);
-		    if (passToken.required()) {
+			if (passToken.required()) {
 				return true;
 			}
 		}
 		//检查有没有需要用户权限的注释，有则跳过认证
 		if (method.isAnnotationPresent(UserLoginToken.class)) {
 			UserLoginToken userLoginToken = method.getAnnotation(UserLoginToken.class);
-		     if (userLoginToken.required()) {
-		    	 //执行认证
-				if (token == null) {
-					logger.debug("--------------token过时，请重新登录---------------");
-					throw new MyException(ErrorCode.USER_EXIST, "token过期，请重新登录");
-				}
+			if (userLoginToken.required()) {
+				//执行认证
 				//token存在，获取token中的userId
 				String newUuid = "";
 				try {
 					//解析token
 					newUuid = JWTUtil.validateJWT(token).getId();
 				} catch (Exception e) {
-					e.printStackTrace();
+					throw new MyException(ErrorCode.USER_EXIST, "token过期，请重新登录");
 				}
 				//通过uuid获取用户
 				User user = new User();
 				user.setUuid(newUuid);
 				User newUser = userService.getUser(user);
-				if (ObjectUtils.isEmpty(newUser)) {
-					logger.debug("--------------用户不存在---------------");
-					throw new MyException(ErrorCode.USER_EXIST, "用户不存在");
+				//判断权限
+				List<String> permissionList = userService.selectUserPermissionList(newUser.getId());
+				String uri = request.getRequestURI();
+				if (!permissionList.contains(uri)) {
+					throw new MyException(ErrorCode.Permission, "您没有权限");
 				}
 				//通过秘钥加密算法生成验证令牌签名工具
 				//用户存在验证token(核实)
 				JWTVerifier jwtVerifier = JWT.require(Algorithm.HMAC256(JWTUtil.JWT_SECERT)).build();
-			    try {
-			    	logger.debug("--------------用户存在验证token(核实)----------------");
-			    	//使用生成token配置选项对给定令牌执行验证。
-			    	DecodedJWT verify = jwtVerifier.verify(token);
-			    	logger.debug("--------------用户存在验证token(对比)----------------"+verify.getToken());
-			    	if (!verify.getToken().equals(token)) {
-			    		throw new MyException(ErrorCode.USER_EXIST, "token不真实");
+				try {
+					logger.debug("--------------用户存在验证token(核实)----------------");
+					//使用生成token配置选项对给定令牌执行验证。
+					DecodedJWT verify = jwtVerifier.verify(token);
+					logger.debug("--------------用户存在验证token(对比)----------------"+verify.getToken());
+					if (!verify.getToken().equals(token)) {
+						throw new MyException(ErrorCode.USER_EXIST, "token验证失败，请重新登录");
+					}
+					//刷新token
+					String newToken = JWTUtil.createJWT(newUser);
+					if (!ObjectUtils.isEmpty(newToken)) {
+						logger.debug("-------------------刷新token------------------------");
+						redisUtil.save(uuid, newToken);
+						redisUtil.setSaveTime(uuid, 15*60);
 					}
 				} catch (Exception e) {
-					e.printStackTrace();
+					throw new MyException(ErrorCode.USER_EXIST, "token验证失败，请重新登录");
 				}
 				//描述，token通过
-		          return true;
-		     }
+				return true;
+			}
 		}
 		//标记通过
 		return true;
 	}
-	
+
 }

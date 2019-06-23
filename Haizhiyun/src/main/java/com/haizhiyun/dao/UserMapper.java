@@ -1,7 +1,11 @@
 package com.haizhiyun.dao;
 
+import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.haizhiyun.entity.bean.Role;
 import com.haizhiyun.entity.bean.User;
 @Transactional
 public interface UserMapper {
@@ -24,11 +28,23 @@ public interface UserMapper {
 	 */
 	public User getUser(User user);
 	/**
+	 * 查询用户已有权限
+	 * @param userId
+	 * @return list
+	 */
+	public List<String> selectUserPermissionList(@Param("userId") Long userId);
+	/**
+	 * 查询用户已有角色
+	 * @param userId
+	 * @return role
+	 */
+	public Role getUserRole(@Param("userId") Long userId);
+	/**
 	 * 注销
 	 * @param uuid
 	 * @return
 	 */
-	public int deleteUser(String uuid);
+	public int deleteUser(@Param("userId") Long userId);
 	/**
 	 * 根据用户名查询
 	 */
